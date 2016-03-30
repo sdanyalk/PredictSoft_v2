@@ -2,6 +2,7 @@
 grjoshi 3/30/2016
 psoft2.js - Main server code for PredictSoft v2
 			Handles database operations and APIs for reading/writing data
+      Forked off of NoFApp v1 built for Twenty 20 Cricket 2016
 */
 
 var express = require('express');
@@ -48,14 +49,14 @@ var sqlConn = new Sequelize(
   });
 
 var Users = sqlConn.import(__dirname + "/models/userModel");
-var Match = sqlConn.import(__dirname + "/models/matchModel");
 var Prediction = sqlConn.import(__dirname + "/models/predictionModel");
-var Team = sqlConn.import(__dirname + "/models/teamModel");
+//var Match = sqlConn.import(__dirname + "/models/matchModel");
+//var Team = sqlConn.import(__dirname + "/models/teamModel");
 
 //define relations
-Match.hasMany(Team, {foreignKey: 'teamID'});
-Team.belongsTo(Match, {foreignKey: 'team1ID'});
-Team.belongsTo(Match, {foreignKey: 'team2ID'});
+//Match.hasMany(Team, {foreignKey: 'teamID'});
+//Team.belongsTo(Match, {foreignKey: 'team1ID'});
+//Team.belongsTo(Match, {foreignKey: 'team2ID'});
 
 sqlConn.sync();
 
@@ -154,7 +155,7 @@ app.post("/api/login",function(req,res){
  Users.find({
     where: {
       email: req.body.email,
-      password: req.body.password           //TODO: use hashed string here
+      password: req.body.password
     }
   })
   .then(function(usrObj){
