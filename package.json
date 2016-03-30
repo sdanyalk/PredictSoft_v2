@@ -1,0 +1,27 @@
+{
+  "name": "nofapp",
+  "version": "1.0.0",
+  "description": "NWA Onine Fantasy App",
+  "main": "nofapp.js",
+  "dependencies": {
+    "body-parser": "^1.5.2",
+    "express": "~4.7.2",
+    "method-override": "~2.1.2",
+    "morgan": "~1.2.2",
+    "mysql": "^2.10.2",
+    "sequelize": "^3.19.3",
+    "serve-favicon": "^2.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "nofapp",
+    "nwa",
+    "nana",
+    "grv"
+  ],
+  "author": "ever3stmomo",
+  "license": "ISC"
+}
