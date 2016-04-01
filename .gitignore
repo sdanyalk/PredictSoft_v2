@@ -4,3 +4,9 @@ node_modules
 /dbconfig-DEV.js
 /app/index - mockup_freeze1.html
 /dbconfig.js
+/.vs/PredictSoft_v2/v14/*.suo
+/*.dat
+/_misc/_dump
+/*.njsproj
+/bin
+/obj/Debug
