@@ -1,0 +1,15 @@
+  <nav class="navbar navbar-default navbar-fixed-top">
+	<div class="container">
+		<div class="navbar-header">
+			<a class="pull-left"> <img src="/app/assets/img/IPL_logo.png"/></a>
+			<a class="navbar-brand" href="/app/index.html#/">PredictSoft v2.00 - IPL 2016</a>
+		</div>
+		<div id="navbar" class="collapse navbar-collapse">
+			<ul class="nav navbar-nav pull-right">
+				<li ng-show="checkIfLoggedIn()">
+					<a href="/app/index.html#/profile">Hello,{{getUserName()}} ({{getUserPoints()}} points)</a>
+				</li>
+			</ul>
+		</div>
+	</div>  		
+  </nav>
