@@ -228,7 +228,7 @@ app.get("/api/getHistory", function (req, res) {
         success: false
     };
     
-    var playerID = req.query.userID;
+    var playerToken = req.query.token;          //TODO:: UPDATE TO USE TOKENS INSTEAD OF USERID!
     
     sqlConn.query(
         "SELECT m.MatchDate as match_date,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team1ID) as team1,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team2ID) as team2,(SELECT teams.Name FROM teams WHERE teams.teamID = p.predictedTeamID) as predicted_team,(SELECT teams.Name FROM teams WHERE teams.teamID = m.WinningTeamID) as winning_team FROM prediction p, users u, teams t, `match` m where p.playerID = " + playerID + " and u.userid = p.playerID and t.teamID = p.predictedTeamID and m.matchID = p.matchID and m.isActive=0",
@@ -256,7 +256,7 @@ app.get("/api/getHistory", function (req, res) {
         res.end();
         return;
     })
-  .catch(function (err) {
+    .catch(function (err) {
         //match find failed. Reply with message
         utils.logMe("Error trying to fetch user match history. Details:\n" + err);
         resObj.success = false;
@@ -323,25 +323,55 @@ app.post("/api/adduser", function (req, res) {
     
     //Password hashing has been taken care of on the client side
     if (req.body.name == "" || req.body.email == "" || req.body.password == "") {
-        utils.logMe("Blank values trying to add user. Not registering");
+        utils.logMe("Blank values trying to add user(email given: "+req.body.email+"). Not registering!");
         return;
     }
     
-    var user = Users.build({
-        name: req.body.name,
-        email: req.body.email,
-        password: req.body.password,
-        points: 0
-    });
-    
-    user.save()
-    .then(function () {
-        res.end();
-        return;
+    var resObj = {
+        message: "",
+        success: false
+    };
+ 
+
+    //check if email ID already exists
+    Users.find({
+        where: {
+            email: req.body.email,
+        }
+    }).then(function (usrObj) {
+        if (usrObj == null) {
+            //email has not been taken; add this user
+            var user = Users.build({
+                name: req.body.name,
+                email: req.body.email,
+                password: req.body.password,
+                auth_key: req.body.token,
+                points: 0
+            });
+            
+            user.save()
+            .then(function () {
+                resObj.success = true;
+                res.json(resObj);
+                return;
+            })
+            .catch(function (err) {
+                utils.logMe("Error adding user {" + req.body.name + "/" + req.body.email + "/" + "}. Details: \n" + err + ")");
+                resObj.success = false;
+                resObj.message = err;
+                res.json(resObj);
+                return;
+            });
+        }
+        else {
+            throw "That email address has already been registered.";
+        }
     })
     .catch(function (err) {
-        console.log("Error adding user {" + req.body.name + "/" + req.body.email + "/" + "}. Details: \n" + err + ")");
-        res.end();
+        utils.logMe("["+req.body.email+"]"+err);
+        resObj.success = false;
+        resObj.message = err;        
+        res.json(resObj);
         return;
     });
 });

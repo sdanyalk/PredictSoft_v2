@@ -1,7 +1,14 @@
 <div class="container">
 	<h1 class="well">Register new account</h1>
 	<div class="col-lg-12 well">
-		<div class="row">
+        <div class="alert alert-success" ng-show="show_confirmation">
+            <span>Thank you for registering. Your account has been created.</span>
+            <p><a href="index.html#">Go to Poll page</a></p>
+        </div>
+        <div class="alert alert-danger" ng-hide="user_added">
+            <span>The user account was not created. DETAILS: {{err_msg}}</span>
+        </div>
+		<div class="row" ng-hide="show_confirmation">
 			<form name="registerForm" ng-submit="registerUser()" novalidate>
 				<div class="col-lg-6 col-lg-offset-4">
 					<div class="row">
