@@ -193,7 +193,7 @@ app.get("/api/checkIfPredicted", function (req, res) {
         hasPredicted: false
     };
     
-    var tokenID = req.query.user_token;
+    var tokenID = req.query.token;
     
     sqlConn.query(
         "SELECT * FROM prediction p WHERE playerID = (SELECT playerID FROM users WHERE auth_key = '" + tokenID + "') AND matchID IN (SELECT matchID FROM `match` WHERE isActive = 1)",

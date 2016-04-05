@@ -33,6 +33,17 @@ Controller that handles
         
         $scope.hasPredicted = true;
         
+        
+        //visibility for poll options      
+        $scope.showPolls = function () {
+            if ($scope.showConfirmation || $scope.hasPredicted) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
+        
         var getLeaderBoard = function () {
             
             //get Points from API

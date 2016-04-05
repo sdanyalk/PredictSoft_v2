@@ -11,3 +11,4 @@ node_modules
 /bin
 /obj/Debug
 /*.sln
+/.vs/PSoft2/v14/.suo

@@ -7,7 +7,7 @@
 	  					<div class="text-center">
 	  						<h1>Upcoming games</h1>
 	  					</div>
-						<div ng-hide="showConfirmation" ng-hide="hasPredicted" class="col-md-12">
+						<div ng-show="showPolls()" class="col-md-12">
 						  	<div class="row" style="padding-left: 38px; padding-top: 10px; padding-bottom: 20px"><span class="label label-danger" ng-show="predErr">Please make a selection for each game</span></div>
 					  			<div ng-repeat="x in games">
 								  	<form>
