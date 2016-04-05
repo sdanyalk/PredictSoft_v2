@@ -10,8 +10,15 @@ angular.module("psoft2UI").service("gameService", function ($http) {
         return promise;
     }
     
-    this.submitPrediction = function (predObj) {
-        var promise = $http.post("/api/submitPrediction", predObj);
+    this.submitPrediction = function (usr_token,predObj) {
+        
+        var data = {
+            token: usr_token,               //user token
+            predObj: predObj                //array of predictions (if more than 1 game)
+        };
+        
+        //console.log("SENDINGG..." + angular.toJson(data, true));
+        var promise = $http.post("/api/submitPrediction", data);
         return promise;
     }
     
@@ -31,7 +38,7 @@ angular.module("psoft2UI").service("gameService", function ($http) {
     }
     
     this.checkIfUserPredicted = function (user_token) {
-        console.log("Checking token::" + user_token);
+        //console.log("Checking token::" + user_token);
         var promise = $http.get("/api/checkIfPredicted?token=" + user_token);
         return promise;
     }

@@ -1,5 +1,10 @@
 
-angular.module("psoft2UI").service("userService",function($http){
+/*
+grjoshi 3/30/2016
+     Service to handle user session object and all user-related API calls
+*/
+
+angular.module("psoft2UI").service("userService", function ($http){
 	//console.log("Starting user auth service");
 	this.usrObj = {
 		userID: '',
@@ -26,12 +31,12 @@ angular.module("psoft2UI").service("userService",function($http){
       	return promise;
   	}
 
-  	this.addUser = function(fname,email,password){
-  		
+  	this.addUser = function(name,email,password,token){
 		var data = {
-			name: fname,
+			name: name,
 			email: email,
-			password: password
+            password: password,
+            token: token
 		};
 
   		var promise = $http.post("/api/adduser", data);
@@ -39,8 +44,7 @@ angular.module("psoft2UI").service("userService",function($http){
   	}
 
 	this.getPredictionHistory = function(userID){
-		//console.log("Getting prediction history for userID: "+userID);
-		var promise = $http.get("/api/getHistory?userID="+userID);
+		var promise = $http.get("/api/getHistory?token="+token);
 		return promise;
 	}
 

@@ -196,7 +196,7 @@ app.get("/api/checkIfPredicted", function (req, res) {
     var tokenID = req.query.user_token;
     
     sqlConn.query(
-        "SELECT * FROM prediction p WHERE playerID = (SELECT playerID FROM users WHERE auth_key = '"+tokenID+"') AND matchID IN (SELECT matchID FROM `match` WHERE isActive = 1)",
+        "SELECT * FROM prediction p WHERE playerID = (SELECT playerID FROM users WHERE auth_key = '" + tokenID + "') AND matchID IN (SELECT matchID FROM `match` WHERE isActive = 1)",
     { type: sqlConn.QueryTypes.SELECT })
     .then(function (predictionCount) {
         if (predictionCount.length > 0) {
@@ -231,7 +231,7 @@ app.get("/api/getHistory", function (req, res) {
     var playerToken = req.query.token;
     
     sqlConn.query(
-        "SELECT m.MatchDate as match_date,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team1ID) as team1,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team2ID) as team2,(SELECT teams.Name FROM teams WHERE teams.teamID = p.predictedTeamID) as predicted_team,(SELECT teams.Name FROM teams WHERE teams.teamID = m.WinningTeamID) as winning_team FROM prediction p, users u, teams t, `match` m where p.playerID = (SELECT playerID FROM users WHERE auth_key = '"+playerToken+"' ) and u.userid = p.playerID and t.teamID = p.predictedTeamID and m.matchID = p.matchID and m.isActive=0",
+        "SELECT m.MatchDate as match_date,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team1ID) as team1,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team2ID) as team2,(SELECT teams.Name FROM teams WHERE teams.teamID = p.predictedTeamID) as predicted_team,(SELECT teams.Name FROM teams WHERE teams.teamID = m.WinningTeamID) as winning_team FROM prediction p, users u, teams t, `match` m where p.playerID = (SELECT playerID FROM users WHERE auth_key = '" + playerToken + "' ) and u.userid = p.playerID and t.teamID = p.predictedTeamID and m.matchID = p.matchID and m.isActive=0",
   { type: sqlConn.QueryTypes.SELECT })
     .then(function (matches) {
         
@@ -324,7 +324,7 @@ app.post("/api/adduser", function (req, res) {
     
     //Password hashing has been taken care of on the client side
     if (req.body.name == "" || req.body.email == "" || req.body.password == "") {
-        utils.logMe("Blank values trying to add user(email given: "+req.body.email+"). Not registering!");
+        utils.logMe("Blank values trying to add user(email given: " + req.body.email + "). Not registering!");
         return;
     }
     
@@ -332,8 +332,8 @@ app.post("/api/adduser", function (req, res) {
         message: "",
         success: false
     };
- 
-
+    
+    
     //check if email ID already exists
     Users.find({
         where: {
@@ -369,9 +369,9 @@ app.post("/api/adduser", function (req, res) {
         }
     })
     .catch(function (err) {
-        utils.logMe("["+req.body.email+"]"+err);
+        utils.logMe("[" + req.body.email + "]" + err);
         resObj.success = false;
-        resObj.message = err;        
+        resObj.message = err;
         res.json(resObj);
         return;
     });
@@ -384,27 +384,37 @@ app.post("/api/submitPrediction", function (req, res) {
     var resObj = {
         message: "",
         success: false
-    };
-    
-    //since userID and matchID are composite keys, it throws exception if user submits twice
-    for (var c = 0; c < req.body.length; c++) {
-        var prediction = Prediction.build({
-            playerID: req.body[c].userID,
-            matchID: req.body[c].matchID,
-            predictedTeamID: req.body[c].teamID
-        });
+    };    
+
+    // utils.logMe("RECVD::" + JSON.stringify(req.body));
+
+    //get userID for given token
+    sqlConn.query(
+        "SELECT userID from users WHERE auth_key = '" + req.body.token + "'",
+    { type: sqlConn.QueryTypes.SELECT })
+    .then(function (user_row) {
         
-        prediction.save()
-    .then(function () {
-            resObj.success = true;
-        })
-    .catch(function (err) {
-            resObj.success = false;
-            resObj.message = err;
-            utils.logMe("Error trying to save prediction information. Details: \n" + err);
-        });
-    }
-    
+        var userID = user_row[0].userID;
+
+        for (var c = 0; c < req.body.predObj.length; c++) {
+            //utils.logMe("c=" + c + "::" + JSON.stringify(req.body.predObj[c]));
+            var prediction = Prediction.build({
+                playerID: userID,
+                matchID: req.body.predObj[c].matchID,
+                predictedTeamID: req.body.predObj[c].teamID
+            });
+            
+            prediction.save()
+                .then(function () {
+                resObj.success = true;
+            })
+                .catch(function (err) {
+                resObj.success = false;
+                resObj.message = err;
+                utils.logMe("Error trying to save prediction information. Details: \n" + err);
+            });
+        }
+    });
     res.json(resObj);
     return;
 });

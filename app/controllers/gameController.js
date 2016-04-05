@@ -41,13 +41,11 @@ Controller that handles
                 if (response == null) {
                     throw "There was an error trying to connect to the web service. Please try again later";
                 }
-                //console.log("SCOREBOARD RESPONSE RETURNED:: "+angular.toJson(response,true));
                 if (!response.data.success) { throw response.data.message; }
                 if (response.data.scoreData.length == 0) {
                     $scope.scoreGrid = { data: '' };
                 }
                 else {
-                    
                     //console.log(angular.toJson(response.data.scoreData,true));
                     $scope.scoreGrid.data = response.data.scoreData;
                 }
@@ -71,15 +69,12 @@ Controller that handles
                 if (response == null) {
                     throw "There was an error trying to fetch prediction data from the web service. Please try again later";
                 }
-                //console.log("PREDICTION RESPONSE RETURNED:: "+angular.toJson(response,true));
                 if (!response.data.success) { throw response.data.message; }
                 if (response.data.predictData.length == 0) {
                     $scope.lockDown = true;
                     $scope.predictionGrid = { data: '' };
                 }
                 else {
-                    
-                    //console.log(angular.toJson(response.data.scoreData,true));
                     $scope.predictionGrid.data = response.data.predictData;
                 }
             })
@@ -143,8 +138,6 @@ Controller that handles
         $scope.submitPoll = function () {
             //submit prediction data to the server
             
-            //TODO::check if user has already predicted for the day
-            
             //check if all matches have been predicted
             if ($scope.games.length != $scope.selection.length) {
                 $scope.predErr = true;
@@ -153,7 +146,7 @@ Controller that handles
             else {
                 //try submitting
                 $scope.predErr = false;
-                gameService.submitPrediction($scope.selection)
+                gameService.submitPrediction(userService.usrObj.token,$scope.selection)
 			.then(function (response) {
                     if (response == null) {
                         throw "There was an error trying to send the prediction data. Please try again later";
@@ -187,7 +180,7 @@ Controller that handles
                 //check if matchID key already exists and clear if so
                 if (e.matchID === matchID) {
                     //Existing item found, updating with new selection
-                    e.userID = $scope.userID;
+                    //e.userID = userService.usrObj.userID;//$scope.userID;
                     e.teamID = teamID;
                     doAdd = false;
                     return;
@@ -197,7 +190,7 @@ Controller that handles
             if (doAdd) {
                 $scope.selection.push(
                     {
-                        userID: $scope.userID,
+                        //userID: userService.usrObj.userID,
                         matchID: matchID,
                         teamID: teamID
                     });

@@ -26,7 +26,6 @@ grjoshi 3/30/2016
                 $scope.is_pass_match = true;
             else {
                 $scope.is_pass_match = false;
-                //console.log("PASSWORDS DO NOT MATCH");
                 return;
             }
             
