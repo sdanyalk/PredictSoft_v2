@@ -30,8 +30,9 @@ angular.module("psoft2UI").service("gameService", function ($http) {
         return promise;
     }
     
-    this.checkIfUserPredicted = function (userID) {
-        var promise = $http.get("/api/checkIfPredicted?userID=" + userID);
+    this.checkIfUserPredicted = function (user_token) {
+        console.log("Checking token::" + user_token);
+        var promise = $http.get("/api/checkIfPredicted?token=" + user_token);
         return promise;
     }
 });

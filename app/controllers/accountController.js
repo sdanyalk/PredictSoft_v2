@@ -1,10 +1,14 @@
+/*
+grjoshi 3/30/2016
+     Service to handle all user account related API calls
+*/
+
 (function () {
-    angular.module("psoft2UI").controller("addUserController", addUserCtrl);
+    angular.module("psoft2UI").controller("accountController", addUserCtrl);
     addUserCtrl.$inject = ['$scope', '$location', 'userService', 'md5'];
     
     function addUserCtrl($scope, $location, userService, md5) {
-        
-        
+              
         $scope.is_pass_match = true;
         $scope.is_processing = false;
         $scope.show_confirmation = false;

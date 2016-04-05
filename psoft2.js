@@ -193,10 +193,10 @@ app.get("/api/checkIfPredicted", function (req, res) {
         hasPredicted: false
     };
     
-    var playerID = req.query.userID;
+    var tokenID = req.query.user_token;
     
     sqlConn.query(
-        "SELECT * FROM prediction p WHERE playerID = " + playerID + " AND matchID IN (SELECT matchID FROM `match` WHERE isActive = 1)",
+        "SELECT * FROM prediction p WHERE playerID = (SELECT playerID FROM users WHERE auth_key = '"+tokenID+"') AND matchID IN (SELECT matchID FROM `match` WHERE isActive = 1)",
     { type: sqlConn.QueryTypes.SELECT })
     .then(function (predictionCount) {
         if (predictionCount.length > 0) {
@@ -228,10 +228,10 @@ app.get("/api/getHistory", function (req, res) {
         success: false
     };
     
-    var playerToken = req.query.token;          //TODO:: UPDATE TO USE TOKENS INSTEAD OF USERID!
+    var playerToken = req.query.token;
     
     sqlConn.query(
-        "SELECT m.MatchDate as match_date,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team1ID) as team1,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team2ID) as team2,(SELECT teams.Name FROM teams WHERE teams.teamID = p.predictedTeamID) as predicted_team,(SELECT teams.Name FROM teams WHERE teams.teamID = m.WinningTeamID) as winning_team FROM prediction p, users u, teams t, `match` m where p.playerID = " + playerID + " and u.userid = p.playerID and t.teamID = p.predictedTeamID and m.matchID = p.matchID and m.isActive=0",
+        "SELECT m.MatchDate as match_date,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team1ID) as team1,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team2ID) as team2,(SELECT teams.Name FROM teams WHERE teams.teamID = p.predictedTeamID) as predicted_team,(SELECT teams.Name FROM teams WHERE teams.teamID = m.WinningTeamID) as winning_team FROM prediction p, users u, teams t, `match` m where p.playerID = (SELECT playerID FROM users WHERE auth_key = '"+playerToken+"' ) and u.userid = p.playerID and t.teamID = p.predictedTeamID and m.matchID = p.matchID and m.isActive=0",
   { type: sqlConn.QueryTypes.SELECT })
     .then(function (matches) {
         
@@ -299,6 +299,7 @@ app.post("/api/login", function (req, res) {
             userID: usrObj.userID,
             email: usrObj.email,
             user: usrObj.name,
+            token: usrObj.auth_key,
             points: usrObj.points
         };
         

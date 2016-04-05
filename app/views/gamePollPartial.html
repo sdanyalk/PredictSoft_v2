@@ -1,0 +1,70 @@
+<div class="container">
+	  	<div>
+	  		<div class="well" style="overflow: hidden">
+	  			<div class="row">
+  					<div class="col-sm-8">
+  						<!-- Poll and Prediction column-->
+	  					<div class="text-center">
+	  						<h1>Upcoming games</h1>
+	  					</div>
+						<div ng-hide="showConfirmation" ng-hide="hasPredicted" class="col-md-12">
+						  	<div class="row" style="padding-left: 38px; padding-top: 10px; padding-bottom: 20px"><span class="label label-danger" ng-show="predErr">Please make a selection for each game</span></div>
+					  			<div ng-repeat="x in games">
+								  	<form>
+									  		<div class="col-sm-6">
+									  			<div class="panel panel-primary">
+									  				<div class="panel-heading">
+									  					Group {{x.team1Group}}
+									  				</div>
+									  				<div class="panel-body">
+								  						{{x.team1Name}}
+								  						<span><input name={{x}} value={{x.team1ID}} type="radio" ng-click="selectTeam(x.matchID,x.team1ID)"></span>
+									  				</div> 
+									  			</div>
+								  			</div>
+									  		<div class="col-sm-6">
+									  			<div class="panel panel-primary">
+									  				<div class="panel-heading">
+									  					Group {{x.team2Group}}	
+									  				</div>
+									  				<div class="panel-body">
+								  						<span><input name={{x}} value={{x.team2ID}} type="radio" ng-click="selectTeam(x.matchID, x.team2ID)"></span>
+								  						{{x.team2Name}}
+									  				</div>
+									  			</div>
+								  			</div>
+					  				</form>
+				  				</div>
+								<div ng-hide="nogames" class="col-sm-4 col-md-offset-4">
+									<button class="btn btn-lg btn-primary btn-block" type="submit" ng-hide="hasPredicted" ng-click="submitPoll()">Submit</button>
+								</div>
+								<div style="padding-bottom: 40px" class="col-sm-8 col-md-offset-3">
+						  			<span ng-show="nogames">There are currently no active games available</span>
+								</div>
+				  			</div>
+						<div class="alert alert-success" ng-show="showConfirmation">
+							<span>Thank you. Your results have been submitted</span>
+						</div>
+						<div ng-show="lockDown" class="alert alert-success">
+							<h3>Note: Prediction visibility has been locked down until midnight</h3>
+						</div>
+						<div ng-hide="nogames">
+	  						<div><h3>Prediction list</h3>
+								<div ui-grid="predictionGrid"></div>
+							</div>
+	  					</div>			  					
+						</div>
+  						<div class="col-sm-4" >
+  						<!-- Leaderboard column -->
+	  						<div>
+		  						<div class="text-center">
+		  							<h1>Scoreboard</h1>
+		  						</div>
+	  						<div>
+								<div ui-grid="scoreGrid"></div>
+							</div>
+  						</div>
+	  			</div>
+  			</div>
+		</div>
+</div>
