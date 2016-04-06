@@ -10,7 +10,7 @@ angular.module("psoft2UI").service("gameService", function ($http) {
         return promise;
     }
     
-    this.submitPrediction = function (usr_token,predObj) {
+    this.submitPrediction = function (usr_token, predObj) {
         
         var data = {
             token: usr_token,               //user token
@@ -32,8 +32,8 @@ angular.module("psoft2UI").service("gameService", function ($http) {
         return promise;
     }
     
-    this.getPredictionList = function () {
-        var promise = $http.get("/api/getPredictions");
+    this.getPredictionList = function (user_token) {
+        var promise = $http.get("/api/getPredictions?token=" + user_token);
         return promise;
     }
     

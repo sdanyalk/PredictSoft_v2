@@ -124,8 +124,10 @@ app.get("/api/getPredictions", function (req, res) {
         success: false
     };
     
+    var tokenID = req.query.token;
+
     sqlConn.query(
-        "SELECT u.name as name, (SELECT Name FROM teams WHERE teamID = p.predictedTeamID) As PredictedTeam FROM prediction p, users u WHERE p.playerID = u.userID AND p.matchID IN ( SELECT matchID FROM `match` WHERE isActive =1 AND isHidden=0)",
+        "SELECT u.name as name, (SELECT Name FROM teams WHERE teamID = p.predictedTeamID) As PredictedTeam FROM prediction p, users u WHERE p.playerID = u.userID AND u.userID NOT IN (SELECT userID from users where auth_key = '"+tokenID+"') AND p.matchID IN ( SELECT matchID FROM `match` WHERE isActive =1 AND isHidden=0)",
       { type: sqlConn.QueryTypes.SELECT })
       .then(function (predictions) {
         resObj.success = true;
@@ -196,7 +198,7 @@ app.get("/api/checkIfPredicted", function (req, res) {
     var tokenID = req.query.token;
     
     sqlConn.query(
-        "SELECT * FROM prediction p WHERE playerID = (SELECT playerID FROM users WHERE auth_key = '" + tokenID + "') AND matchID IN (SELECT matchID FROM `match` WHERE isActive = 1)",
+        "SELECT * FROM prediction p WHERE playerID = (SELECT userID FROM users WHERE auth_key = '" + tokenID + "') AND matchID IN (SELECT matchID FROM `match` WHERE isActive = 1)",
     { type: sqlConn.QueryTypes.SELECT })
     .then(function (predictionCount) {
         if (predictionCount.length > 0) {
@@ -206,6 +208,8 @@ app.get("/api/checkIfPredicted", function (req, res) {
             resObj.hasPredicted = false;
         }
         
+        utils.logMe("RETOBJ::" + JSON.stringify(resObj));
+
         res.json(resObj);
         res.end();
         return;

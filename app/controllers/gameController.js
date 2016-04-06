@@ -75,7 +75,7 @@ Controller that handles
             }
             
             //get Prediction from API
-            gameService.getPredictionList()
+            gameService.getPredictionList($scope.user_token)
 			.then(function (response) {
                 if (response == null) {
                     throw "There was an error trying to fetch prediction data from the web service. Please try again later";
