@@ -36,12 +36,11 @@ Controller that handles
         
         //visibility for poll options      
         $scope.showPolls = function () {
-            
-            if ($scope.games.length > 0) {
-                return true;
+            if ($scope.showConfirmation || $scope.hasPredicted) {
+                return false;
             }
             else {
-                return false;
+                return true;
             }
         }
         
@@ -103,32 +102,45 @@ Controller that handles
             getLeaderBoard();			//load score table
             getPredictionTable();		//load prediction table
             
-            
-            //get list of active games
-            
-            gameService.getNextGame()
-				.then(function (response) {
-                if (response == null) {
-                    throw "There was an error trying to connect to the web service. Please try again later";
-                }
+            //check if user has already predicted
+            gameService.checkIfUserPredicted($scope.user_token)
+			.then(function (response) {
                 
-                if (!response.data.success) {
-                    throw response.data.message;
+                //console.log("%%"+angular.toJson(response));
+                $scope.hasPredicted = response.data.hasPredicted;
+                //console.log("@@$cope.hasPredicted ="+$scope.hasPredicted);
+                if (!$scope.hasPredicted) {
+                    //only load if game has not been predicted for this user
+                    
+                    //get next game item by calling API function
+                    gameService.getNextGame()
+						.then(function (response) {
+                        if (response == null) {
+                            throw "There was an error trying to connect to the web service. Please try again later";
+                        }
+                        
+                        if (!response.data.success) {
+                            throw response.data.message;
+                        }
+                        
+                        if (response.data.matchData.length == 0) {
+                            $scope.nogames = true;
+                        }
+                        else {
+                            $scope.games = response.data.matchData.slice();		//copy games info to scope
+                            $scope.nogames = false;
+                        }
+                        
+                        return;
+                    })
+						.catch(function (err) {
+                        console.log("ERROR: " + err);
+                        return;
+                    })
                 }
-                
-                console.log(angular.toJson(response.data, true));
-                
-                if (response.data.count == 0) {
-                    $scope.nogames = true;
-                }
-                else {
-                    $scope.games = response.data.matchData.slice();		//copy games info to scope
-                    $scope.nogames = false;
-                }
-                return;
             })
-				.catch(function (err) {
-                console.log("ERROR: " + err);
+			.catch(function (err) {
+                console.log(err);
                 return;
             })
         }
@@ -145,7 +157,7 @@ Controller that handles
             else {
                 //try submitting
                 $scope.predErr = false;
-                gameService.submitPrediction(userService.usrObj.token, $scope.selection)
+                gameService.submitPrediction(userService.usrObj.token,$scope.selection)
 			.then(function (response) {
                     if (response == null) {
                         throw "There was an error trying to send the prediction data. Please try again later";
@@ -157,8 +169,9 @@ Controller that handles
 						throw response.data.message;
 				}
 */
+				//console.log("Prediction added to DB. Now is a good place to show summary or success page");
 				$scope.showConfirmation = true;
-                    //$location.path("/poll");
+                    //$location.path("/summary");
                     return;
                 })
 			.catch(function (err) {

@@ -81,26 +81,22 @@ app.get("/api/nextmatch", function (req, res) {
     };
     //Using isActive column to determine which matches are to be shown
     sqlConn.query(
-        "SELECT team1.teamID as t1ID,team1.name as t1Name,team1.groupID as t1Group, team2.teamID as t2ID,team2.name as t2Name, team2.groupID as t2Group, match.matchID as matchID, match.isLocked as locked, match.MatchDate as date FROM `match` LEFT JOIN (teams as team1, teams as team2) ON (team1.teamID = `match`.Team1ID AND team2.teamID = `match`.Team2ID) WHERE isActive=1",
+        "SELECT team1.teamID as t1ID,team1.name as t1Name,team1.groupID as t1Group, team2.teamID as t2ID,team2.name as t2Name, team2.groupID as t2Group, match.matchID as matchID, match.MatchDate as date FROM `match` LEFT JOIN (teams as team1, teams as team2) ON (team1.teamID = `match`.Team1ID AND team2.teamID = `match`.Team2ID) WHERE isActive=1",
         { type: sqlConn.QueryTypes.SELECT })
         .then(function (matches) {
         //fill response object and return
         resObj.success = true;
         resObj.count = matches.length;
-
+        
         for (var n = 0; n < matches.length; n++) {
-            
-            //TODO: update query to also select current predictions for user            
-
             resObj.matchData.push({
-                matchID: matches[n].matchID,
                 team1ID: matches[n].t1ID,
                 team1Name: matches[n].t1Name,
-                //team1Group: matches[n].t1Group,
+                team1Group: matches[n].t1Group,
                 team2ID: matches[n].t2ID,
                 team2Name: matches[n].t2Name,
-                //team2Group: matches[n].t2Group,
-                locked: (matches[n].locked == 0)?false:true,        //this will enable/disable prediction for particular match
+                team2Group: matches[n].t2Group,
+                matchID: matches[n].matchID,
                 date: matches[n].date
             });
         }
@@ -123,28 +119,44 @@ app.get("/api/nextmatch", function (req, res) {
 //list predictions for upcoming match from submitted players
 app.get("/api/getPredictions", function (req, res) {
     var resObj = {
+        userData: [],
         predictData: [],
         message: "",
         success: false
     };
     
+    var tokenID = req.query.token;
+    
     sqlConn.query(
-        "SELECT u.name as name, (SELECT Name FROM teams WHERE teamID = p.predictedTeamID) As PredictedTeam FROM prediction p, users u WHERE p.playerID = u.userID AND p.matchID IN ( SELECT matchID FROM `match` WHERE isActive =1 AND isHidden=0)",
-      { type: sqlConn.QueryTypes.SELECT })
-      .then(function (predictions) {
-        resObj.success = true;
-        for (var n = 0; n < predictions.length; n++) {
-            //console.log(JSON.stringify(predictions));
-            resObj.predictData.push({
-                Name: predictions[n].name,
-                Team: predictions[n].PredictedTeam
-            });
-        }
-        res.json(resObj);
-        res.end();
-        return;
+        "SELECT * FROM prediction p WHERE playerID = (SELECT userID FROM users WHERE auth_key = '"+tokenID+"') AND matchID IN (SELECT matchID FROM `match` WHERE isActive = 1)",
+         { type: sqlConn.QueryTypes.SELECT })
+    .then(function (usr_pred) {
+        //fill user's prediction data
+        for (var i = 0; i < usr_pred.length; i++) {
+            resObj.userData.push({
+
+            })
+        };
+        
+
+        sqlConn.query(
+            "SELECT u.name as name, (SELECT Name FROM teams WHERE teamID = p.predictedTeamID) As PredictedTeam FROM prediction p, users u WHERE p.playerID = u.userID AND u.userID NOT IN (SELECT userID from users where auth_key = '" + tokenID + "') AND p.matchID IN ( SELECT matchID FROM `match` WHERE isActive =1 AND isHidden=0)",
+            { type: sqlConn.QueryTypes.SELECT })
+            .then(function (predictions) {
+            resObj.success = true;
+            for (var n = 0; n < predictions.length; n++) {
+                //console.log(JSON.stringify(predictions));
+                resObj.predictData.push({
+                    Name: predictions[n].name,
+                    Team: predictions[n].PredictedTeam
+                });
+            }
+            res.json(resObj);
+            res.end();
+            return;
+        })
     })
-      .catch(function (err) {
+    .catch(function (err) {
         utils.logMe("Error trying to fill in prediction data. Details:\n" + err);
         resObj.success = false;
         resObj.message = err;
@@ -209,6 +221,8 @@ app.get("/api/checkIfPredicted", function (req, res) {
         else {
             resObj.hasPredicted = false;
         }
+        
+        utils.logMe("RETOBJ::" + JSON.stringify(resObj));
         
         res.json(resObj);
         res.end();
@@ -291,7 +305,7 @@ app.post("/api/login", function (req, res) {
             password: req.body.password
         }
     })
-  .then(function (usrObj) {
+.then(function (usrObj) {
         
         if (usrObj == null) {
             throw "User not found. Please check username/password and try again";
@@ -311,7 +325,7 @@ app.post("/api/login", function (req, res) {
         res.end();
         return;
     })
-  .catch(function (err) {
+.catch(function (err) {
         //user find failed
         utils.logMe("Error trying to fetch user with email " + req.body.email + "Details: \n" + err);
         resObj.success = false;
@@ -355,12 +369,12 @@ app.post("/api/adduser", function (req, res) {
             });
             
             user.save()
-            .then(function () {
+.then(function () {
                 resObj.success = true;
                 res.json(resObj);
                 return;
             })
-            .catch(function (err) {
+.catch(function (err) {
                 utils.logMe("Error adding user {" + req.body.name + "/" + req.body.email + "/" + "}. Details: \n" + err + ")");
                 resObj.success = false;
                 resObj.message = err;
@@ -372,7 +386,7 @@ app.post("/api/adduser", function (req, res) {
             throw "That email address has already been registered.";
         }
     })
-    .catch(function (err) {
+.catch(function (err) {
         utils.logMe("[" + req.body.email + "]" + err);
         resObj.success = false;
         resObj.message = err;
@@ -388,24 +402,20 @@ app.post("/api/submitPrediction", function (req, res) {
     var resObj = {
         message: "",
         success: false
-    };    
-
+    };
+    
     // utils.logMe("RECVD::" + JSON.stringify(req.body));
-
+    
     //get userID for given token
     sqlConn.query(
         "SELECT userID from users WHERE auth_key = '" + req.body.token + "'",
-    { type: sqlConn.QueryTypes.SELECT })
-    .then(function (user_row) {
+{ type: sqlConn.QueryTypes.SELECT })
+.then(function (user_row) {
         
         var userID = user_row[0].userID;
-
+        
         for (var c = 0; c < req.body.predObj.length; c++) {
             //utils.logMe("c=" + c + "::" + JSON.stringify(req.body.predObj[c]));
-            
-            //TODO: check if prediction already exists for user first
-            //TODO: use FINDORCREATE to solve the issue!!!!!!
-            
             var prediction = Prediction.build({
                 playerID: userID,
                 matchID: req.body.predObj[c].matchID,
@@ -413,10 +423,10 @@ app.post("/api/submitPrediction", function (req, res) {
             });
             
             prediction.save()
-                .then(function () {
+.then(function () {
                 resObj.success = true;
             })
-                .catch(function (err) {
+.catch(function (err) {
                 resObj.success = false;
                 resObj.message = err;
                 utils.logMe("Error trying to save prediction information. Details: \n" + err);
