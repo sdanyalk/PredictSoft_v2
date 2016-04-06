@@ -87,11 +87,11 @@ app.get("/api/nextmatch", function (req, res) {
         //fill response object and return
         resObj.success = true;
         resObj.count = matches.length;
-
+        
         for (var n = 0; n < matches.length; n++) {
             
             //TODO: update query to also select current predictions for user            
-
+            
             resObj.matchData.push({
                 matchID: matches[n].matchID,
                 team1ID: matches[n].t1ID,
@@ -381,52 +381,84 @@ app.post("/api/adduser", function (req, res) {
     });
 });
 
-//update prediction table with user's submission
+
 app.post("/api/submitPrediction", function (req, res) {
-    //adding user prediction to the database
     
     var resObj = {
         message: "",
         success: false
-    };    
-
-    // utils.logMe("RECVD::" + JSON.stringify(req.body));
-
-    //get userID for given token
+    };
+    
+    //utils.logMe("predObj::" + JSON.stringify(req.body.predObj));
+    var rows = req.body.predObj.length;
+    var userID = 0;
+    var team_id = 0;
+    var match_id = 0;
+    var team_id2 = 0;
+    var match_id2 = 0;
+    
     sqlConn.query(
         "SELECT userID from users WHERE auth_key = '" + req.body.token + "'",
     { type: sqlConn.QueryTypes.SELECT })
     .then(function (user_row) {
         
-        var userID = user_row[0].userID;
-
-        for (var c = 0; c < req.body.predObj.length; c++) {
-            //utils.logMe("c=" + c + "::" + JSON.stringify(req.body.predObj[c]));
-            
-            //TODO: check if prediction already exists for user first
-            //TODO: use FINDORCREATE to solve the issue!!!!!!
-            
-            var prediction = Prediction.build({
-                playerID: userID,
-                matchID: req.body.predObj[c].matchID,
-                predictedTeamID: req.body.predObj[c].teamID
-            });
-            
-            prediction.save()
-                .then(function () {
+        userID = user_row[0].userID;
+        team_id = req.body.predObj[0].teamID;
+        match_id = req.body.predObj[0].matchID;
+        Prediction
+                .findOrCreate({ where: { playerID: userID, matchID: match_id } })
+                .spread(function (prediction, created) {
+            if (!created) {
+                //utils.logMe("TEAMID INSIDE findOrCreate is: " + team_id);
+                //utils.logMe("prediction object:" + JSON.stringify(prediction));
+                
+                //prediction exists; update it
+                sqlConn.query(
+                    "UPDATE prediction SET predictedTeamID=" + team_id + " WHERE playerID=" + userID + " AND matchID=" + match_id,
+                        { type: sqlConn.QueryTypes.UPDATE })
+                        .then(function (updated) {
+                    //utils.logMe("Updated for user " + userID + " for matchID: " + match_id + "; new team: " + team_id);
+                    resObj.success = true;
+                })
+            }
+            else {
+                //new row has been created
                 resObj.success = true;
-            })
-                .catch(function (err) {
-                resObj.success = false;
-                resObj.message = err;
-                utils.logMe("Error trying to save prediction information. Details: \n" + err);
+            }
+        });
+        return resObj;
+    })
+    .then(function () {
+        //utils.logMe("userID from second row is: " + userID);
+        if (rows > 1) {
+            //update second game if exists
+            team_id2 = req.body.predObj[1].teamID;
+            match_id2 = req.body.predObj[1].matchID;
+            return Prediction
+                    .findOrCreate({ where: { playerID: userID, matchID: match_id2 } })
+                    .spread(function (prediction2, created) {
+                if (!created) {
+                    //utils.logMe("TEAMID INSIDE findOrCreate is: " + team_id2);
+                    //utils.logMe("prediction object:" + JSON.stringify(prediction));
+                    
+                    //prediction exists; update it
+                    sqlConn.query(
+                        "UPDATE prediction SET predictedTeamID=" + team_id2 + " WHERE playerID=" + userID + " AND matchID=" + match_id2,
+                            { type: sqlConn.QueryTypes.UPDATE })
+                            .then(function (updated2) {
+                        //utils.logMe("Updated for user " + userID + " for matchID: " + match_id2 + "; new team: " + team_id2);
+                        resObj.success = true;
+                    })
+                }
+                else {
+                    //new row has been created
+                    resObj.success = true;
+                }
             });
         }
-    });
-    res.json(resObj);
-    return;
+        return resObj;
+    })
 });
-
 
 /*=====================================Init app=====================================*/
 
