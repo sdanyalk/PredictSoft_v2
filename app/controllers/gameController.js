@@ -96,8 +96,12 @@ Controller that handles
         }
         
         if (!userService.checkLogin()) {
-            //user not logged in
-            $location.path("/login");
+            //try loading user session from 
+            if (!userService.checkSession()) {
+                //no session saved either, so redirect to login
+                //console.log("User not logged in!!");
+                $location.path("/login");
+            }
         }
         else {
             getLeaderBoard();			//load score table
@@ -116,7 +120,7 @@ Controller that handles
                     throw response.data.message;
                 }
                 
-                console.log(angular.toJson(response.data, true));
+                //console.log(angular.toJson(response.data, true));
                 
                 if (response.data.count == 0) {
                     $scope.nogames = true;

@@ -1,7 +1,7 @@
 (function () {
     angular.module("psoft2UI").controller("userController", userCtrl);
-    userCtrl.$inject = ['$scope', '$location', 'userService', 'md5'];
-    function userCtrl($scope, $location, userService, md5) {
+    userCtrl.$inject = ['$scope', '$location', 'userService', '$window', 'md5'];
+    function userCtrl($scope, $location, userService, $window, md5) {
         //console.log("in the user controller");
         $scope.user = {};	//initially empty
         $scope.is_valid = true;
@@ -35,9 +35,13 @@
             })
         };
         
+        
         if (!userService.checkLogin()) {
-            //console.log("User not logged in!!");
-            $location.path("/login");
+            if (!userService.checkSession()) {
+                //no session saved either, so redirect to login
+                //console.log("User not logged in!!");
+                $location.path("/login");
+            }
         }
         else {
             //console.log("User logged in with name: "+userService.usrObj.name);
@@ -54,9 +58,10 @@
         
         $scope.logout = function () {
             //invalidate user session
-            console.log("Destroying user session");
+            console.log("Erasing user session...");
             $scope.user = {};
             userService.usrObj = {};
+            window.localStorage.clear();
             $location.path("/login");
         };
         
@@ -81,7 +86,6 @@
                 $location.path("/poll");
                 return;
             }
-            
             $scope.is_waiting = true;
             userService.login($scope.email, md5.createHash($scope.password))
 			.then(function (response) {
@@ -109,8 +113,17 @@
                     token: response.data.usrData.token,
                     points: response.data.usrData.points
                 }
+                
+                if ($scope.savelogin) {
+                    //session persistence
+                    //console.log("This is where the login needs to be saved!");
+                    window.localStorage['nofapp_session'] = angular.toJson(userService.usrObj);
+                    //$localStorage.$default({ nofapp_token: response.data.usrData.token });          //save user token to local storage
+                    //console.log("Saved user token to local storage");
+                }
+                
                 $scope.is_valid = true;
-                console.log("Set user object to: "+angular.toJson(userService.usrObj,true));
+                //console.log("Set user object to: " + angular.toJson(userService.usrObj, true));
                 $location.path("/poll");
                 return;
             })

@@ -11,6 +11,7 @@
         </div>
         <!--TODO: Remember me checkbox -->
         <br>
+        <div style="padding-left:28px;"><input type="checkbox" ng-model="savelogin" />Remember me<br /><br /></div>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in<span ng-show="is_waiting"><img src="/assets/img/loading.gif"></span></button>
         <!-- Disable login after registration deadline -->
         <button class="btn btn-lg btn-primary btn-block" ng-click="redirectToRegister()">Register</button>

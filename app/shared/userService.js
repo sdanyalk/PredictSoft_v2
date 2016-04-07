@@ -5,7 +5,6 @@ grjoshi 3/30/2016
 */
 
 angular.module("psoft2UI").service("userService", function ($http){
-	//console.log("Starting user auth service");
 	this.usrObj = {
 		userID: '',
 		email: '',
@@ -13,9 +12,24 @@ angular.module("psoft2UI").service("userService", function ($http){
         token: '',
 		points: 0
 	};	
+    
+    
+    this.checkSession = function () { 
+    //check local storage for login, and return true if found
+        if (window.localStorage['nofapp_session']) {
+            //console.log("User session is available as:" + angular.toJson(window.localStorage['nofapp_session']));
+            this.usrObj = angular.fromJson(window.localStorage['nofapp_session']);
+            //console.log("Loaded:: " + angular.toJson(this.usrObj, true));
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 
 	this.checkLogin=function(){
-		if(this.usrObj.token=='')			//use token to check if user is logged in
+        
+        if (this.usrObj.token == '')			//use token to check if user is logged in
 			return false;
 		else
 			return true;
@@ -43,7 +57,7 @@ angular.module("psoft2UI").service("userService", function ($http){
   		return promise;
   	}
 
-	this.getPredictionHistory = function(userID){
+	this.getPredictionHistory = function(token){
 		var promise = $http.get("/api/getHistory?token="+token);
 		return promise;
 	}

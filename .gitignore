@@ -12,3 +12,4 @@ node_modules
 /obj/Debug
 /*.sln
 /.vs/PSoft2/v14/.suo
+/*.tmp
