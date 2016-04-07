@@ -17,6 +17,7 @@ This application needs the following to be installed before it can be deployed:
   # mkdir psoft2
   # cd psoft2
   # git clone https://github.com/grv2k8/PredictSoft_v2.git
+  # cd PredictSoft_v2
 ```
 ## Run npm install on main folder and inside /app folder
 ```bash
