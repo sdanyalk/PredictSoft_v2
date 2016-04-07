@@ -193,6 +193,8 @@ Controller that handles
                         teamID: teamID
                     });
             }
+            
+            //console.log(angular.toJson($scope.selection, true));
             return;
         }
 

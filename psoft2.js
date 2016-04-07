@@ -410,7 +410,7 @@ app.post("/api/submitPrediction", function (req, res) {
                 .spread(function (prediction, created) {
             if (!created) {
                 //utils.logMe("TEAMID INSIDE findOrCreate is: " + team_id);
-                utils.logMe("EXISTING prediction object:" + JSON.stringify(prediction));
+                //utils.logMe("EXISTING prediction object:" + JSON.stringify(prediction));
                 
                 //prediction exists; update it
                 sqlConn.query(
@@ -440,14 +440,14 @@ app.post("/api/submitPrediction", function (req, res) {
                     .spread(function (prediction2, created) {
                 if (!created) {
                     //utils.logMe("TEAMID INSIDE findOrCreate is: " + team_id2);
-                    utils.logMe("EXISTING prediction object:" + JSON.stringify(prediction2));
+                    //utils.logMe("EXISTING prediction object:" + JSON.stringify(prediction2));
                     
                     //prediction exists; update it
                     sqlConn.query(
                         "UPDATE prediction SET predictedTeamID=" + team_id2 + " WHERE playerID=" + userID + " AND matchID=" + match_id2,
                             { type: sqlConn.QueryTypes.UPDATE })
                             .then(function (updated2) {
-                        //utils.logMe("Updated for user " + userID + " for matchID: " + match_id2 + "; new team: " + team_id2);
+                        utils.logMe("Updated for user " + userID + " for matchID: " + match_id2 + "; new team: " + team_id2);
                         resObj.success = true;
                     })
                 }
