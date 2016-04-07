@@ -405,24 +405,25 @@ app.post("/api/submitPrediction", function (req, res) {
         userID = user_row[0].userID;
         team_id = req.body.predObj[0].teamID;
         match_id = req.body.predObj[0].matchID;
-        Prediction
-                .findOrCreate({ where: { playerID: userID, matchID: match_id } })
+        return Prediction
+                .findOrCreate({ where: { playerID: userID, matchID: match_id }, defaults: { predictedTeamID: team_id } })
                 .spread(function (prediction, created) {
             if (!created) {
                 //utils.logMe("TEAMID INSIDE findOrCreate is: " + team_id);
-                //utils.logMe("prediction object:" + JSON.stringify(prediction));
+                utils.logMe("EXISTING prediction object:" + JSON.stringify(prediction));
                 
                 //prediction exists; update it
                 sqlConn.query(
                     "UPDATE prediction SET predictedTeamID=" + team_id + " WHERE playerID=" + userID + " AND matchID=" + match_id,
                         { type: sqlConn.QueryTypes.UPDATE })
                         .then(function (updated) {
-                    //utils.logMe("Updated for user " + userID + " for matchID: " + match_id + "; new team: " + team_id);
+                    utils.logMe("Updated for user " + userID + " for matchID: " + match_id + "; new team: " + team_id);
                     resObj.success = true;
                 })
             }
             else {
                 //new row has been created
+                utils.logMe("New row has been created for user " + userID + " for matchID: " + match_id + "; new team: " + team_id);
                 resObj.success = true;
             }
         });
@@ -435,11 +436,11 @@ app.post("/api/submitPrediction", function (req, res) {
             team_id2 = req.body.predObj[1].teamID;
             match_id2 = req.body.predObj[1].matchID;
             return Prediction
-                    .findOrCreate({ where: { playerID: userID, matchID: match_id2 } })
+                    .findOrCreate({ where: { playerID: userID, matchID: match_id2 }, defaults: { predictedTeamID: team_id2 }})
                     .spread(function (prediction2, created) {
                 if (!created) {
                     //utils.logMe("TEAMID INSIDE findOrCreate is: " + team_id2);
-                    //utils.logMe("prediction object:" + JSON.stringify(prediction));
+                    utils.logMe("EXISTING prediction object:" + JSON.stringify(prediction2));
                     
                     //prediction exists; update it
                     sqlConn.query(
@@ -452,6 +453,7 @@ app.post("/api/submitPrediction", function (req, res) {
                 }
                 else {
                     //new row has been created
+                    utils.logMe("New row has been created for user " + userID + " for matchID: " + match_id2 + "; new team: " + team_id2);
                     resObj.success = true;
                 }
             });
