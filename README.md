@@ -31,7 +31,7 @@ This application needs the following to be installed before it can be deployed:
 ## Run the server
 
 ```bash
-  node psoft2.js
+  nodejs psoft2.js
 ```
 
 ## You're all set when you see a message similar to the following
