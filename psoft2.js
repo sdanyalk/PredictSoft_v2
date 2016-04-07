@@ -235,7 +235,7 @@ app.get("/api/getHistory", function (req, res) {
     var playerToken = req.query.token;
     
     sqlConn.query(
-        "SELECT m.MatchDate as match_date,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team1ID) as team1,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team2ID) as team2,(SELECT teams.Name FROM teams WHERE teams.teamID = p.predictedTeamID) as predicted_team,(SELECT teams.Name FROM teams WHERE teams.teamID = m.WinningTeamID) as winning_team FROM prediction p, users u, teams t, `match` m where p.playerID = (SELECT playerID FROM users WHERE auth_key = '" + playerToken + "' ) and u.userid = p.playerID and t.teamID = p.predictedTeamID and m.matchID = p.matchID and m.isActive=0",
+        "SELECT m.MatchDate as match_date,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team1ID) as team1,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team2ID) as team2,(SELECT teams.Name FROM teams WHERE teams.teamID = p.predictedTeamID) as predicted_team,(SELECT teams.Name FROM teams WHERE teams.teamID = m.WinningTeamID) as winning_team FROM prediction p, users u, teams t, `match` m where p.playerID = (SELECT userID FROM users WHERE auth_key = '" + playerToken + "' ) and u.userid = p.playerID and t.teamID = p.predictedTeamID and m.matchID = p.matchID and m.isActive=0",
   { type: sqlConn.QueryTypes.SELECT })
     .then(function (matches) {
         
@@ -244,8 +244,8 @@ app.get("/api/getHistory", function (req, res) {
         resObj.count = matches.length;
         
         for (var n = 0; n < matches.length; n++) {
+            var outcome = (matches[n].predicted_team==null)?"[TBD]":((matches[n].predicted_team == matches[n].winning_team)?"WIN":"LOSS");
             
-            var outcome = (matches[n].predicted_team == matches[n].winning_team)?"WIN":"LOSS";
             resObj.historyData.push({
                 team1Name: matches[n].team1,
                 team2Name: matches[n].team2,
@@ -381,7 +381,7 @@ app.post("/api/adduser", function (req, res) {
     });
 });
 
-
+//create/update prediction for user
 app.post("/api/submitPrediction", function (req, res) {
     
     var resObj = {

@@ -1,4 +1,8 @@
-SET @tokenID := 'c18f3475482c59f2bde584676deaf31c';
+SET @tokenID := 'c18f3475482c59f2bde584676deaf31c';		/* Manuel Neuer*/
+
+
+/* get prediction history for current user */
+SELECT m.MatchDate as match_date,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team1ID) as team1,(SELECT teams.Name FROM teams WHERE teams.teamID = m.Team2ID) as team2,(SELECT teams.Name FROM teams WHERE teams.teamID = p.predictedTeamID) as predicted_team,(SELECT teams.Name FROM teams WHERE teams.teamID = m.WinningTeamID) as winning_team FROM prediction p, users u, teams t, `match` m where p.playerID = (SELECT userID FROM users WHERE auth_key = @tokenID ) and u.userid = p.playerID and t.teamID = p.predictedTeamID and m.matchID = p.matchID and m.isActive=0;
 
 
 /*get list of upcoming games */

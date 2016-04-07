@@ -14,8 +14,9 @@
         
         var getUserPredictionHistory = function () {
             
-            userService.getPredictionHistory($scope.user.userID)
+            userService.getPredictionHistory($scope.user.token)
 			.then(function (response) {
+                //console.log(angular.toJson(response.data));
                 if (response == null) {
                     throw "There was an error trying to get user prediction history from the server. Please try again later";
                 }
@@ -145,6 +146,13 @@
             $location.path("/register");
             return;
         };
+
+        $scope.getDisplayPoints = function (resultStr)
+        {
+            if (resultStr == "[TBD]") return "[TBD]";
+            if (resultStr == "WIN") return "3";
+            return "0";
+        }
 
     }
 })();
